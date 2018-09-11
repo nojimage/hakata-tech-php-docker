@@ -1,0 +1,34 @@
+version: '3'
+
+# ボリューム定義
+# - MySQLのデータ格納領域用に dbdata を作成
+volumes:
+    dbdata:
+      driver: local
+
+# サービス定義
+services:
+# - MySQL
+  db:
+    image: mysql:5.7
+    ports:
+      - "13306:3306"          # ホストの 13306 に割当
+    volumes:
+      - dbdata:/var/lib/mysql # dbdataをマウント
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass
+    restart: always
+
+# - php-apache
+  app:
+    build: ./php/ # phpディレクトリにある Dockerfile からビルド
+    ports:
+      - "8000:80" # ホストの 8000 に割当
+    depends_on:
+      - db        # dbサービスに依存
+    volumes:
+      - ./wordpress:/var/www/html # ホスト上のwordpressディレクトリをドキュメントルートにマウント
+    restart: always
